@@ -1,42 +1,21 @@
-import * as cheerio from "cheerio";
+import puppeteer from "puppeteer";
 import fs from "fs";
 
 const url = "https://jp.finalfantasyxiv.com/lodestone/worldstatus/";
 
-const res = await fetch(url, {
-  headers: {
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Accept-Language": "ja-JP,ja;q=0.9",
-  },
+const browser = await puppeteer.launch({
+  args: ["--no-sandbox", "--disable-setuid-sandbox"]
 });
 
-const html = await res.text();
-const $ = cheerio.load(html);
+const page = await browser.newPage();
+await page.goto(url, { waitUntil: "networkidle2" });
 
-const worlds = [];
+// JS描画後のHTML取得
+const content = await page.content();
 
-$(".world-list__item").each((i, el) => {
-  const name = $(el).find(".world-list__world_name").text().trim();
-  const status = $(el).find(".world-list__status").text().trim();
+await browser.close();
 
-  if (name && status) {
-    worlds.push({ name, status });
-  }
-});
+// とりあえず保存して中身確認
+fs.writeFileSync("debug.html", content);
 
-fs.writeFileSync(
-  "status.json",
-  JSON.stringify(
-    {
-      updated: new Date().toISOString(),
-      count: worlds.length,
-      worlds: worlds,
-    },
-    null,
-    2
-  )
-);
-
-console.log("Generated:", worlds.length);
-console.log(html.slice(0, 1000));
+console.log("HTML saved.");
