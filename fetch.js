@@ -1,28 +1,40 @@
 import puppeteer from "puppeteer";
 import fs from "fs";
 
-const url = "https://jp.finalfantasyxiv.com/lodestone/worldstatus/";
-
 const browser = await puppeteer.launch({
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  headless: false,   // ← これ超重要
+  args: ["--no-sandbox"]
 });
 
 const page = await browser.newPage();
 
-await page.goto(url, {
-  waitUntil: "networkidle2",
+await page.setUserAgent(
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+);
+
+await page.goto(
+  "https://jp.finalfantasyxiv.com/lodestone/worldstatus/",
+  { waitUntil: "networkidle2", timeout: 60000 }
+);
+
+await page.waitForSelector(".world-list", { timeout: 60000 });
+
+const worlds = await page.evaluate(() => {
+  const data = [];
+  document.querySelectorAll(".world-list tr").forEach(tr => {
+    const name = tr.querySelector(".world-name")?.innerText;
+    const status = tr.querySelector(".world-status")?.innerText;
+    if (name && status) {
+      data.push({ name, status });
+    }
+  });
+  return data;
 });
 
-// ★ ここ超重要
-await page.waitForSelector("table", { timeout: 15000 });
-
-// 念のため少し待つ
-await new Promise(r => setTimeout(r, 3000));
-
-const content = await page.content();
-
-fs.writeFileSync("debug.html", content);
+fs.writeFileSync("status.json", JSON.stringify({
+  updated: new Date().toISOString(),
+  count: worlds.length,
+  worlds
+}, null, 2));
 
 await browser.close();
-
-console.log("DONE");
