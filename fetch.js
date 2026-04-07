@@ -3,7 +3,14 @@ import fs from "fs";
 
 const url = "https://jp.finalfantasyxiv.com/lodestone/worldstatus/";
 
-const res = await fetch(url);
+const res = await fetch(url, {
+  headers: {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Accept-Language": "ja-JP,ja;q=0.9",
+  },
+});
+
 const html = await res.text();
 const $ = cheerio.load(html);
 
@@ -24,7 +31,7 @@ fs.writeFileSync(
     {
       updated: new Date().toISOString(),
       count: worlds.length,
-      worlds: worlds
+      worlds: worlds,
     },
     null,
     2
@@ -32,3 +39,4 @@ fs.writeFileSync(
 );
 
 console.log("Generated:", worlds.length);
+console.log(html.slice(0, 1000));
