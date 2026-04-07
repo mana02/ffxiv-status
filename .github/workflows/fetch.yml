@@ -17,8 +17,14 @@ jobs:
           node-version: 20
 
       - run: npm install   # ← これが無いと puppeteer 入らない
-
-      - run: node fetch.js
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Install Chrome
+        run: npx puppeteer browsers install chrome
+      
+      - name: Run script
+        run: node fetch.js
 
       - name: Commit and push
         run: |
