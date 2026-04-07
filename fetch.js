@@ -19,6 +19,9 @@ $(".world-list__world").each((i, el) => {
   }
 });
 
-fs.writeFileSync("status.json", JSON.stringify(worlds, null, 2));
+fs.writeFileSync("status.json", JSON.stringify({
+  updated: new Date().toISOString(),
+  worlds: worlds
+}, null, 2));
 
 console.log("status.json generated");
