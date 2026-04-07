@@ -3,16 +3,15 @@ import fs from "fs";
 
 const url = "https://jp.finalfantasyxiv.com/lodestone/worldstatus/";
 
-const res = await fetch(url); // ← Node18標準fetch
+const res = await fetch(url);
 const html = await res.text();
-
 const $ = cheerio.load(html);
 
 const worlds = [];
 
-$("tr").each((i, el) => {
-  const name = $(el).find("td").eq(0).text().trim();
-  const status = $(el).find("td").eq(1).text().trim();
+$(".world-list__item").each((i, el) => {
+  const name = $(el).find(".world-list__world_name").text().trim();
+  const status = $(el).find(".world-list__status").text().trim();
 
   if (name && status) {
     worlds.push({ name, status });
@@ -21,11 +20,15 @@ $("tr").each((i, el) => {
 
 fs.writeFileSync(
   "status.json",
-  JSON.stringify({
-    updated: new Date().toISOString(),
-    count: worlds.length,
-    worlds: worlds
-  }, null, 2)
+  JSON.stringify(
+    {
+      updated: new Date().toISOString(),
+      count: worlds.length,
+      worlds: worlds
+    },
+    null,
+    2
+  )
 );
 
 console.log("Generated:", worlds.length);
