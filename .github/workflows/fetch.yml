@@ -27,3 +27,5 @@ jobs:
           git add status.json
           git commit -m "update status" || echo "No changes"
           git push
+          
+      - run: ls -la
