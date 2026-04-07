@@ -1,10 +1,9 @@
-import fetch from "node-fetch";
 import * as cheerio from "cheerio";
 import fs from "fs";
 
 const url = "https://jp.finalfantasyxiv.com/lodestone/worldstatus/";
 
-const res = await fetch(url);
+const res = await fetch(url); // ← Node18標準fetch
 const html = await res.text();
 
 const $ = cheerio.load(html);
